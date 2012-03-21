@@ -5,12 +5,12 @@ Forked from Adam Jacob (https://github.com/adamhjk/ruby-circonus)
 Major Differences:
 
 * No support for older style email/password auth.  Instead, we only support tokens and app names.  
-* No defined methods, e.g. list_checks, instead we have a very generic wrapper that you pass an endpoint too.  This has the advantage of making the code simplier, as well as future proofing against the addition of new endpoints.
+* No defined methods, e.g. list_checks, instead we have a very generic wrapper that you pass an endpoint too.  This has the advantage of making the code simpler, as well as future proofing against the addition of new endpoints.
 
 
 ##Before You Begin 
 
-Before you do anythign make sure you have an API token, and an allowed app name.  To create and manage these go to https://circonus.com/user/tokens .
+Before you do anything make sure you have an API token, and an allowed app name.  To create and manage these go to https://circonus.com/user/tokens .
 
 ##How to Use
 
