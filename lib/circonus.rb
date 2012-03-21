@@ -23,26 +23,27 @@ require 'json'
 require 'rest_client'
 
 class Circonus
-  VERSION = "0.0.1"
+  VERSION = "0.0.2"
 
-  attr_writer :email, :password, :account
+  attr_writer :auth_token, :app_name, :account
   attr_reader :rest
 
-  def initialize(email, password, account=nil)
-    @email = email
-    @password = password
+  def initialize(auth_token, app_name, account=nil)
+    @auth_token = auth_token
+    @app_name = app_name
     @account = account
     @format = "json"
-    @rest = RestClient::Resource.new("https://circonus.com/api/#{@format}")
+    @rest = RestClient::Resource.new("http://circonus.com/api/#{@format}")
   end
 
   def options(args={})
     response = {
-      :email => @email,
-      :password => @password
+      :x_circonus_auth_token => @auth_token,
+      :x_circonus_app_name => @app_name
     }
+    
     response[:account] = @account if @account
-  
+
     args.each do |key, value|
       response[key] = value
     end
@@ -55,88 +56,30 @@ class Circonus
     JSON.parse(value)
   end
 
-  ###
-  # Read Methods
-  ###
-  def list_accounts
-    deserialize do
-      @rest['list_accounts'].post(options)
+  def call(values={}, opts={})
+    # if no method is defined assume 'get'
+    if values[:method].nil?
+        values[:method] = 'get'
     end
-  end
 
-  def list_agents
-    deserialize do
-      @rest['list_agents'].post(options)
-    end
-  end
+    uri = values[:endpoint] + '?'
+    
+    # append the opt param's it to uri
+    values.each do | param, value | 
+        if param.to_s != "method" and param.to_s != "endpoint" then 
+            uri << param.to_s + '=' + CGI::escape(value.to_s) + '&'
+        end
+    end 
 
-  def list_checks(opts={})
-    deserialize do
-      @rest['list_checks'].post(options(opts))
-    end
+   # make the request
+    if values[:method] == 'get' then
+        deserialize do
+            @rest[uri].get(options(opts))
+        end
+    elsif values[:method] == 'post' then
+        deserialize do
+            @rest[uri].post(options(opts)) 
+        end
+    end 
   end
-
-  def list_metrics(opts={})
-    deserialize do
-      @rest['list_metrics'].post(options(opts))
-    end
-  end
-
-  def list_rules(opts={})
-    deserialize do
-      @rest['list_rules'].post(options(opts))
-    end
-  end
-
-  ###
-  # Write Methods
-  ###
-  def add_check_bundle(opts={})
-    deserialize do
-      @rest['add_check_bundle'].post(options(opts))
-    end
-  end
-
-  def edit_check_bundle(opts={})
-    deserialize do
-      @rest['edit_check_bundle'].post(options(opts))
-    end
-  end
-
-  def enable_check_bundle(opts={})
-    deserialize do
-      @rest['enable_check_bundle'].post(options(opts))
-    end
-  end
-
-  def disable_check_bundle(opts={})
-    deserialize do
-      @rest['disable_check_bundle'].post(options(opts))
-    end
-  end
-
-  def enable_check(opts={})
-    deserialize do
-      @rest['enable_check'].post(options(opts))
-    end
-  end
-
-  def disable_check(opts={})
-    deserialize do
-      @rest['disable_check'].post(options(opts))
-    end
-  end
-
-  def add_metric_rule(opts={})
-    deserialize do
-      @rest['add_metric_rule'].post(options(opts))
-    end
-  end
-
-  def remove_metric_rule(opts={})
-    deserialize do
-      @rest['remove_metric_rule'].post(options(opts))
-    end
-  end
-
 end
